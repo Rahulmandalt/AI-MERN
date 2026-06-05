@@ -11,21 +11,22 @@ import Loading from './pages/Loading'
 import Login from './pages/Login'
 import { useAppContext } from './context/AppContext'
 import { useContext } from 'react'
-
+import {Toaster} from "react-hot-toast"
 
 function App() {
 
-const {user} = useAppContext()  
+const {user,loadingUser} = useAppContext()  
 
 const [isMenuOpen,setIsMenuOpen] = useState(false)
 
 const {pathname}=useLocation()
 
-if(pathname==='/loading') return <Loading/>
+if(pathname==='/loading'||loadingUser) return <Loading/>
 
 
   return (
     <>
+    <Toaster/>
   {!isMenuOpen && <img src={assets.menu_icon} className='absolute top-3 left-3 w-8 h-8 cursor-pointer md:hidden not-dark:invert' onClick={()=>setIsMenuOpen(true)}/>}
 
 {user ? (

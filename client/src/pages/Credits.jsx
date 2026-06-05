@@ -1,16 +1,47 @@
 import React, { useEffect, useState } from 'react'
 import { dummyPlans } from '../assets/assets'
 import Loading from './Loading'
+import { useAppContext } from '../context/AppContext'
+import { toast } from 'react-toastify'
+
 
 function Credits() {
 
   const [plane,setPlane] = useState([])
   const [loading,setloading]=useState(true)
+  const {token,axios}=useAppContext()
 
     const fetchPlans = async ()=>{
-      setPlane(dummyPlans)
+      try{
+        const {data}= await axios.get('/api/credit/plan',{
+          headers: {
+  Authorization: `Bearer ${token}`}
+        })  
+        if(data.success){
+          setPlane(data.plans)
+        }else{
+          toast.error(data.message || 'failed to fetch plans.')
+        }
+      }catch(error){
+        toast.error(error.message)
+      }
       setloading(false)
-    }  
+    } 
+    
+    const purchasePlane = async (planId) =>{
+      try{
+          const {data}= await axios.post('/api/credit/purchase', {planId},{ headers: {
+  Authorization: `Bearer ${token}`}})
+  if(data.success){
+    window.location.href=data.url
+
+  }else{
+    toast.error(data.message)
+  }
+      }catch(error){
+       toast.error(error.message)
+      }
+    }
 
     useEffect(()=>{
       fetchPlans()
@@ -19,7 +50,7 @@ function Credits() {
     if(loading) return <Loading/>
 
   return (
-    <div className='max w-7xl h-screen overflow-y-scroll mx-auto px-4 sm:px-6 lg:px-8 py-12'>
+    <div className='max=w-7xl h-screen overflow-y-scroll mx-auto px-4 sm:px-6 lg:px-8 py-12'>
       <h2 className=' text-3xl font-semibold text-center mb-10 xl:mt-30 text-gray-800 dark:text-white'>Credit Plane</h2>
       <div className='flex  justify-center gap-8'>
          {
@@ -36,7 +67,16 @@ function Credits() {
             ))}
            </ul>
            </div>
-           <button className='mt-6 bg-purple-600 hover:bg-purple-700 active:bg-purple-800 text-white font-medium py-2 rounded transition-color cursor-pointer'>BUY NOW</button>
+           <button  onClick={() =>
+    toast.promise(
+      purchasePlan(plan._id),
+      {
+        loading: 'Processing...',
+        success: 'Redirecting...',
+        error: 'Failed'
+      }
+    )
+  } className='mt-6 bg-purple-600 hover:bg-purple-700 active:bg-purple-800 text-white font-medium py-2 rounded transition-color cursor-pointer'>BUY NOW</button>
             </div>
           ))
          }

@@ -42,15 +42,24 @@ export const getChat = async (req, res) => {
 };
 
 //api controller for deleting a chat
-export const deleteChat =async (req,res)=>{
-    try{
-        const userId=res.user._id
-       const {chatId}=res.body
+export const deleteChat = async (req, res) => {
+  try {
+    const userId = req.user._id;
+    const { chatId } = req.body;
 
-       await Chat.deleteOne({_id:chatId,userId})
+    await Chat.deleteOne({
+      _id: chatId,
+      userId,
+    });
 
-        res.json({success:true, massage:"chat deleted"})
-    } catch (error){
-        res.json({success:false, massage:error.massage})
-    }
-}
+    res.json({
+      success: true,
+      message: "Chat deleted",
+    });
+  } catch (error) {
+    res.json({
+      success: false,
+      message: error.message,
+    });
+  }
+};

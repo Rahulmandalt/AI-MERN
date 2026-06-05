@@ -1,8 +1,9 @@
 import React, { useEffect } from 'react'
 import { assets } from '../assets/assets'
 import moment from 'moment'
-import markdown from 'react-markdown'
+
 import Markdown from 'react-markdown'
+
 import Prism from 'prismjs'
 
 
@@ -30,7 +31,7 @@ useEffect(()=>{
               <img src={massage.content} alt='' className='w-full max-w-md mt-2'/>
             ):(
               <div className='text-sm dark:text-primary reset-tw'>
-               <Markdown>{massage.content}</Markdown> 
+               <Markdown>{massage.content}</Markdown>
                 </div>
             )}
             <span className='text-xs text-gray-400 dark:text-[#B1A6C0]'>{moment(massage.timestamp).fromNow() }</span>
