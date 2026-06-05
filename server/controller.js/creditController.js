@@ -51,7 +51,7 @@ export const purchase = async (req, res) => {
         const transaction = await Transaction.create({
             userId: userId,
             planId: planId,
-            amount: plan.credits,
+            amount: plan.price,
             credits: plan.credits,
             isPaid: false
         })

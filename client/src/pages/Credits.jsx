@@ -2,7 +2,7 @@ import React, { useEffect, useState } from 'react'
 import { dummyPlans } from '../assets/assets'
 import Loading from './Loading'
 import { useAppContext } from '../context/AppContext'
-import { toast } from 'react-toastify'
+import toast from "react-hot-toast";
 
 
 function Credits() {
@@ -32,6 +32,7 @@ function Credits() {
       try{
           const {data}= await axios.post('/api/credit/purchase', {planId},{ headers: {
   Authorization: `Bearer ${token}`}})
+  console.log(data)
   if(data.success){
     window.location.href=data.url
 
@@ -69,7 +70,7 @@ function Credits() {
            </div>
            <button  onClick={() =>
     toast.promise(
-      purchasePlan(plan._id),
+      purchasePlane(plan._id),
       {
         loading: 'Processing...',
         success: 'Redirecting...',

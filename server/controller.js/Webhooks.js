@@ -4,51 +4,40 @@ import User from "../models/User.js";
 
 const stripe = new Stripe(process.env.STRIPE_SECRET_KEY);
 
-export const stripeWebhooks = async (request, response) => {
-  const sig = request.headers["stripe-signature"];
+export const stripeWebhooks = async (req, res) => {
+  const sig = req.headers["stripe-signature"];
 
   let event;
 
   try {
     event = stripe.webhooks.constructEvent(
-      request.body,
+      req.body,
       sig,
       process.env.STRIPE_WEBHOOK_SECRET
     );
+
+    console.log("Webhook Event:", event.type);
+
   } catch (error) {
-    console.log("Webhook signature error:", error.message);
-    return response.status(400).send(`Webhook Error: ${error.message}`);
+    console.log("Webhook Signature Error:", error.message);
+    return res.status(400).send(`Webhook Error: ${error.message}`);
   }
 
   try {
-    console.log("Webhook Event:", event.type);
 
-    if (event.type === "payment_intent.succeeded") {
-      const paymentIntent = event.data.object;
+    if (event.type === "checkout.session.completed") {
 
-      const sessionList = await stripe.checkout.sessions.list({
-        payment_intent: paymentIntent.id,
-      });
+      const session = event.data.object;
 
-      if (!sessionList.data.length) {
-        return response.json({
-          received: true,
-          message: "No checkout session found",
-        });
-      }
+      console.log("Session Metadata:", session.metadata);
 
-      const session = sessionList.data[0];
-
-      const transactionId = session?.metadata?.transactionId;
-      const appId = session?.metadata?.appId;
-
-      console.log("transactionId:", transactionId);
-      console.log("appId:", appId);
+      const transactionId = session.metadata?.transactionId;
+      const appId = session.metadata?.appId;
 
       if (!transactionId || appId !== "quickgpt") {
-        return response.json({
+        return res.json({
           received: true,
-          message: "Invalid metadata",
+          message: "Invalid metadata"
         });
       }
 
@@ -58,26 +47,39 @@ export const stripeWebhooks = async (request, response) => {
       });
 
       if (!transaction) {
-        return response.json({
+        return res.json({
           received: true,
           message: "Transaction not found or already paid",
         });
       }
 
-      await User.updateOne(
-        { _id: transaction.userId },
-        { $inc: { credits: transaction.credits } }
-      );
+      const user = await User.findById(transaction.userId);
+
+      if (!user) {
+        return res.json({
+          received: true,
+          message: "User not found",
+        });
+      }
+
+      user.credits += transaction.credits;
+      await user.save();
 
       transaction.isPaid = true;
       await transaction.save();
 
-      console.log("Credits added successfully");
+      console.log(
+        `Credits Added: ${transaction.credits} to user ${user._id}`
+      );
     }
 
-    return response.json({ received: true });
+    res.json({ received: true });
+
   } catch (error) {
-    console.log("Webhook processing error:", error);
-    return response.status(500).send("Internal Server Error");
+    console.log("Webhook Processing Error:", error);
+    res.status(500).json({
+      success: false,
+      message: error.message,
+    });
   }
 };
