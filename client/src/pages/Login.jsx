@@ -1,7 +1,6 @@
 import React from "react";
 import { useState } from "react";
 import { useAppContext } from "../context/AppContext";
-//import { useContext } from 'react'
 import toast from "react-hot-toast";
 
 function Login() {

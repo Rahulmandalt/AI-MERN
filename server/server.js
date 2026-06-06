@@ -17,7 +17,7 @@ app.post('/api/stripe', express.raw({type: 'application/json'}),stripeWebhooks)
 
 // middleware
 app.use(cors({
-  origin: ['http://localhost:5173'],
+  origin: ['https://nextgenai-ruby.vercel.app'],
   credentials: true
 }))
 
